@@ -1,25 +1,13 @@
-class TreeNode {
-  constructor(key) {
-    this.key = 0;
-    this.isLeaf = false;
-    this.parent = null;
+class Node {
+  constructor(value) {
+    this.value = value;
     this.left = null;
     this.right = null;
-    this.color = TreeColors.red;
-    if (key !== null) {
-      this.key = key;
-    } else {
-      this.isLeaf = true;
-    }
+    this.parent = null;
+    this.color = "red";
+    this.padTop = 5;
   }
 }
-
-var TreeColors;
-(function (TreeColors) {
-  TreeColors[(TreeColors["red"] = 0)] = "red";
-  TreeColors[(TreeColors["black"] = 1)] = "black";
-})(TreeColors || (TreeColors = {}));
-
 class RedBlackTree {
   constructor() {
     this.root = null;
@@ -28,7 +16,7 @@ class RedBlackTree {
   }
   insert(key) {
     this.tips = [];
-    var treeNode = new TreeNode(key);
+    var treeNode = new Node(key);
     this.list.push(treeNode);
     if (this.root === null) {
       this.root = treeNode;
@@ -37,24 +25,24 @@ class RedBlackTree {
       var nextNode = currentNode;
       while (nextNode !== null) {
         currentNode = nextNode;
-        if (currentNode.key > treeNode.key) {
+        if (currentNode.value > treeNode.value) {
           nextNode = currentNode.left;
-        } else if (currentNode.key < treeNode.key) {
+        } else if (currentNode.value < treeNode.value) {
           nextNode = currentNode.right;
         } else {
           this.list.slice[(0, -1)];
           return; // return if node with that key already exists
         }
       }
-      if (currentNode.key > treeNode.key) {
+      if (currentNode.value > treeNode.value) {
         currentNode.left = treeNode;
         this.tips.push(
-          ` Users node is less than ${currentNode.key}, we will locate it like a left child`
+          ` Users node is less than ${currentNode.value}, we will locate it like a left child`
         );
       } else {
         currentNode.right = treeNode;
         this.tips.push(
-          ` Users node is more than ${currentNode.key}, we will locate it like a right child`
+          ` Users node is more than ${currentNode.value}, we will locate it like a right child`
         );
       }
       treeNode.parent = currentNode;
@@ -65,186 +53,91 @@ class RedBlackTree {
     }
     this.root = treeNode;
   }
-  find(key) {
-    var currentNode = this.root;
-    while (currentNode !== null && currentNode.key !== key) {
-      if (currentNode.key > key) {
-        currentNode = currentNode.left;
-      } else {
-        currentNode = currentNode.right;
-      }
-    }
-    return currentNode;
-  }
-  sibling(treeNode) {
+  insertCase1(treeNode) {
     if (treeNode.parent === null) {
-      return null;
-    }
-    if (treeNode === treeNode.parent.left) {
-      return treeNode.parent.right;
+      this.tips.push(`Change root color to black if we need`);
+      treeNode.color = "black";
     } else {
-      return treeNode.parent.left;
+      this.insertCase2(treeNode);
     }
   }
-  replaceNode(toReplace, replaceBy) {
-    if (toReplace.parent !== null) {
-      if (toReplace.parent.left === toReplace) {
-        toReplace.parent.left = replaceBy;
-      } else {
-        toReplace.parent.right = replaceBy;
-      }
-    } else {
-      this.root = replaceBy;
-    }
-    if (replaceBy !== null) {
-      replaceBy.parent = toReplace.parent;
-    }
-  }
-  remove(key) {
-    this.tips = [];
-    var nodeToRemove = this.find(key);
-    if (nodeToRemove === null) {
-      this.tips.push("Can`t find this number");
+  // if parent of treeNode is black
+  insertCase2(treeNode) {
+    if (treeNode.parent.color === "black") {
+      this.tips.push(
+        " Users node parent is black, so we didn`t change anything"
+      );
       return;
-    }
-    var closestValueNode = null;
-    if (nodeToRemove.left !== null) {
-      var leftSubTree = nodeToRemove.left;
-      while (leftSubTree.right !== null) {
-        leftSubTree = leftSubTree.right;
-      }
-      closestValueNode = leftSubTree;
-    } else if (nodeToRemove.right !== null) {
-      var rightSubTree = nodeToRemove.right;
-      while (rightSubTree.left !== null) {
-        rightSubTree = rightSubTree.left;
-      }
-      closestValueNode = rightSubTree;
-    }
-    this.tips.push(`Closest value node = ${closestValueNode.key}`);
-    if (closestValueNode !== null) {
-      var temp = nodeToRemove.key;
-      nodeToRemove.key = closestValueNode.key;
-      closestValueNode.key = temp;
-      nodeToRemove = closestValueNode;
-    }
-    var child =
-      nodeToRemove.right === null ? nodeToRemove.left : nodeToRemove.right;
-    if (child === null) {
-      // just to make it a node, not null
-      child = new TreeNode(null);
-      child.color = TreeColors.black;
-    }
-    this.replaceNode(nodeToRemove, child);
-    if (nodeToRemove.color === TreeColors.black) {
-      if (child.color === TreeColors.red) {
-        child.color = TreeColors.black;
-      } else {
-        this.removeCase1(child);
-      }
-    }
-    if (child.isLeaf) {
-      this.replaceNode(child, null);
-    }
-  }
-  removeCase1(treeNode) {
-    if (treeNode.parent !== null) {
-      this.removeCase2(treeNode);
-    }
-  }
-  removeCase2(treeNode) {
-    var sibling = this.sibling(treeNode);
-    if (sibling !== null && sibling.color === TreeColors.red) {
-      treeNode.parent.color = TreeColors.red;
-      sibling.color = TreeColors.black;
-      if (treeNode.parent.right === treeNode) {
-        this.rotateRight(treeNode.parent);
-      } else {
-        this.rotateLeft(treeNode.parent);
-      }
-    }
-    this.removeCase3(treeNode);
-  }
-  removeCase3(treeNode) {
-    var sibling = this.sibling(treeNode);
-    if (
-      treeNode.parent.color === TreeColors.red &&
-      sibling.color === TreeColors.black &&
-      (sibling.left === null || sibling.left.color === TreeColors.black) &&
-      (sibling.right === null || sibling.right.color === TreeColors.black)
-    ) {
-      sibling.color = TreeColors.red;
-      this.removeCase1(treeNode.parent);
     } else {
-      this.removeCase4(treeNode);
+      this.insertCase3(treeNode);
     }
   }
-  removeCase4(treeNode) {
-    var sibling = this.sibling(treeNode);
-    if (
-      treeNode.parent.color === TreeColors.red &&
-      sibling.color === TreeColors.black &&
-      (sibling.left === null || sibling.left.color === TreeColors.black) &&
-      (sibling.right === null || sibling.right.color === TreeColors.black)
-    ) {
-      sibling.color = TreeColors.red;
-      treeNode.parent.color = TreeColors.black;
+  // if parent and uncle are red
+  insertCase3(treeNode) {
+    var uncle = this.getUncle(treeNode);
+    if (uncle !== null && this.getUncle(treeNode).color === "red") {
+      treeNode.parent.color = "black";
+      uncle.color = "black";
+      var grandparent = this.getGrandparent(treeNode);
+      grandparent.color = "red";
+      this.tips.push(
+        "Uncle and parent are red, parent and uncle color we need to" +
+          " set with black, and grandparent`s color we change to black if we need"
+      );
+      this.insertCase1(grandparent);
     } else {
-      this.removeCase5(treeNode);
+      this.insertCase4(treeNode);
     }
   }
-  removeCase5(treeNode) {
-    var sibling = this.sibling(treeNode);
-    if (sibling.color === TreeColors.black) {
-      if (
-        treeNode === treeNode.parent.left &&
-        (sibling.right === null || sibling.right.color === TreeColors.black) &&
-        sibling.left !== null &&
-        sibling.left.color === TreeColors.red
-      ) {
-        sibling.color = TreeColors.red;
-        sibling.left.color = TreeColors.black;
-        this.rotateRight(sibling);
-      } else if (
-        treeNode === treeNode.parent.right &&
-        (sibling.left === null || sibling.left.color === TreeColors.black) &&
-        sibling.right !== null &&
-        sibling.right.color === TreeColors.red
-      ) {
-        sibling.color = TreeColors.red;
-        sibling.right.color = TreeColors.black;
-        this.rotateLeft(sibling);
-      }
-    }
-    this.removeCase6(treeNode);
-  }
-  removeCase6(treeNode) {
-    var sibling = this.sibling(treeNode);
-    sibling.color = treeNode.parent.color;
-    if (treeNode === treeNode.parent.left) {
-      sibling.right.color = TreeColors.black;
+  // if parent is red, but uncle is not and treeNode is the left son while parent is right son
+  // or treeNode is right son and parent is left son
+  insertCase4(treeNode) {
+    var grandparent = this.getGrandparent(treeNode);
+    if (
+      treeNode.parent.right === treeNode &&
+      grandparent.left === treeNode.parent
+    ) {
+      this.tips.push(
+        "if treenode is right son and it`s parent is left, do left rotation" +
+          " on parent"
+      );
       this.rotateLeft(treeNode.parent);
-    } else {
-      sibling.left.color = TreeColors.black;
+      treeNode = treeNode.left;
+    } else if (
+      treeNode.parent.left === treeNode &&
+      grandparent.right === treeNode.parent
+    ) {
+      this.tips.push(
+        "if treenode is left son and it`s parent is right, do right rotation" +
+          " on parent"
+      );
       this.rotateRight(treeNode.parent);
+      treeNode = treeNode.right;
     }
+    this.insertCase5(treeNode);
   }
-  grandparent(treeNode) {
-    if (treeNode !== null && treeNode.parent !== null) {
-      return treeNode.parent.parent; // also will return null, if parent has no parent. It's ok.
+  // last case
+  insertCase5(treeNode) {
+    var grandparent = this.getGrandparent(treeNode);
+    ("change parent color on black");
+    treeNode.parent.color = "black";
+    grandparent.color = "red";
+    if (
+      treeNode.parent.left === treeNode &&
+      grandparent.left === treeNode.parent
+    ) {
+      if (grandparent) {
+        this.tips.push(
+          "if node is left son and parent is left son, do right rotation" +
+            " on grandparent"
+        );
+      }
+      this.rotateRight(grandparent);
     } else {
-      return null;
-    }
-  }
-  uncle(treeNode) {
-    var grandparent = this.grandparent(treeNode);
-    if (grandparent === null) {
-      return null;
-    }
-    if (treeNode.parent === grandparent.left) {
-      return grandparent.right;
-    } else {
-      return grandparent.left;
+      if (grandparent) {
+        this.tips.push("Rotate left on grandparent");
+      }
+      this.rotateLeft(grandparent);
     }
   }
   rotateLeft(treeNode) {
@@ -283,119 +176,237 @@ class RedBlackTree {
     treeNode.parent = pivot;
     pivot.right = treeNode;
   }
+  rotateLeftToDelete(node) {
+    let tempNode = node.right;
+    node.right = tempNode.left;
+    if (tempNode.left !== null) {
+      tempNode.left.parent = node;
+    }
+    tempNode.parent = node.parent;
+    if (node.parent === null) {
+      this.root = tempNode;
+    } else if (node === node.parent.left) {
+      node.parent.left = tempNode;
+    } else {
+      node.parent.right = tempNode;
+    }
+    tempNode.left = node;
+    node.parent = tempNode;
+  }
 
-  // if treeNode is in root
-  insertCase1(treeNode) {
-    if (treeNode.parent === null) {
-      this.tips.push(`Change root color to black if we need`);
-      treeNode.color = TreeColors.black;
-    } else {
-      this.insertCase2(treeNode);
+  rotateRightToDelete(node) {
+    let tempNode = node.left;
+    node.left = tempNode.right;
+    if (tempNode.right !== null) {
+      tempNode.right.parent = node;
+    }
+    tempNode.parent = node.parent;
+    if (node.parent === null) {
+      this.root = tempNode;
     }
   }
-  // if parent of treeNode is black
-  insertCase2(treeNode) {
-    if (treeNode.parent.color === TreeColors.black) {
-      this.tips.push(
-        " Users node parent is black, so we didn`t change anything"
-      );
+  delete(value) {
+    this.tips = [];
+    let node = this.findNode(value);
+    if (node == null) {
       return;
-    } else {
-      this.insertCase3(treeNode);
+    }
+    if (node.left === null && node.right === null) {
+      this.tips.push("Just a leaf, easy to delete");
+    }
+    if (node.left !== null && node.right !== null) {
+      let predecessor = this.getPredecessor(node);
+      node.value = predecessor.value;
+      node = predecessor;
+      this.tips.push(`Change to predecessor: ${predecessor.value}`);
+    }
+    let child = node.right === null ? node.left : node.right;
+    console.log(child);
+    if (child) {
+      this.tips.push(`Found child to change: ${child.value}`);
+    }
+    if (this.getColor(node) === "black") {
+      node.color = this.getColor(child);
+      this.deleteCase1(node);
+    }
+    this.replaceNode(node, child);
+    if (this.getColor(this.root) === "red") {
+      this.tips.push("Root needs to be black, so change color");
+      this.root.color = "black";
     }
   }
-  // if parent and uncle are red
-  insertCase3(treeNode) {
-    var uncle = this.uncle(treeNode);
-    if (uncle !== null && uncle.color === TreeColors.red) {
-      treeNode.parent.color = TreeColors.black;
-      uncle.color = TreeColors.black;
-      var grandparent = this.grandparent(treeNode);
-      grandparent.color = TreeColors.red;
+  replaceNode(oldNode, newNode) {
+    if (oldNode.parent === null) {
+      this.root = newNode;
+      this.tips.push("giving value to root");
+    } else {
+      if (oldNode === oldNode.parent.left) {
+        oldNode.parent.left = newNode;
+      } else {
+        oldNode.parent.right = newNode;
+      }
+    }
+    if (newNode !== null) {
+      newNode.parent = oldNode.parent;
+    }
+  }
+
+  deleteCase1(node) {
+    if (node.parent === null) {
+      this.tips.push("Node parent is root, so end");
+      return;
+    }
+    this.deleteCase2(node);
+  }
+
+  deleteCase2(node) {
+    let sibling = this.getSibling(node);
+    if (this.getColor(sibling) === "red") {
+      node.parent.color = "red";
       this.tips.push(
-        "Uncle and parent are red, parent and uncle color we need to" +
-          " set with black, and grandparent`s color we change to black if we need"
+        `'brother' color is red, so change ${sibling.value} color to black and ${parent.value} to red`
       );
-      this.insertCase1(grandparent);
+      sibling.color = "black";
+      if (node === node.parent.left) {
+        this.tips.push("rotate left");
+        this.rotateLeftToDelete(node.parent);
+      } else {
+        this.rotateRightToDelete(node.parent);
+        this.tips.push("rotate right");
+      }
+    }
+    this.deleteCase3(node);
+  }
+  deleteCase3(node) {
+    let sibling = this.getSibling(node);
+    if (
+      this.getColor(node.parent) === "black" &&
+      this.getColor(sibling) === "black" &&
+      this.getColor(sibling.left) === "black" &&
+      this.getColor(sibling.right) === "black"
+    ) {
+      sibling.color = "red";
+      this.tips.push(`Change color of ${sibling.value} to red`);
+      this.deleteCase1(node.parent);
     } else {
-      this.insertCase4(treeNode);
+      this.deleteCase4(node);
     }
   }
-  // if parent is red, but uncle is not and treeNode is the left son while parent is right son
-  // or treeNode is right son and parent is left son
-  insertCase4(treeNode) {
-    var grandparent = this.grandparent(treeNode);
+
+  deleteCase4(node) {
+    let sibling = this.getSibling(node);
     if (
-      treeNode.parent.right === treeNode &&
-      grandparent.left === treeNode.parent
+      this.getColor(node.parent) === "red" &&
+      this.getColor(sibling) === "black" &&
+      this.getColor(sibling.left) === "black" &&
+      this.getColor(sibling.right) === "black"
     ) {
       this.tips.push(
-        "if treenode is right son and it`s parent is left, do left rotation" +
-          " on parent"
+        `change ${sibling.value} color to red and ${parent.value} color to black `
       );
-      this.rotateLeft(treeNode.parent);
-      treeNode = treeNode.left;
+      sibling.color = "red";
+      node.parent.color = "black";
+    } else {
+      this.deleteCase5(node);
+    }
+  }
+  deleteCase5(node) {
+    let sibling = this.getSibling(node);
+    if (
+      node === node.parent.left &&
+      this.getColor(sibling) === "black" &&
+      this.getColor(sibling.left) === "red" &&
+      this.getColor(sibling.right) === "black"
+    ) {
+      sibling.color = "red";
+      sibling.left.color = "black";
+      this.tips.push(
+        `change ${sibling.value} color to red and ${sibling.left.value} color to black `
+      );
+      this.rotateRightToDelete(sibling);
+      this.tips.push(`rotate ${sibling.value} right`);
     } else if (
-      treeNode.parent.left === treeNode &&
-      grandparent.right === treeNode.parent
+      node === node.parent.right &&
+      this.getColor(sibling) === "black" &&
+      this.getColor(sibling.right) === "red" &&
+      this.getColor(sibling.left) === "black"
     ) {
+      sibling.color = "red";
+      sibling.right.color = "black";
       this.tips.push(
-        "if treenode is left son and it`s parent is right, do right rotation" +
-          " on parent"
+        `change ${sibling.value} color to red and ${sibling.right.value} color to black `
       );
-      this.rotateRight(treeNode.parent);
-      treeNode = treeNode.right;
+      this.rotateLeftToDelete(sibling);
+      this.tips.push(`rotate ${sibling.value} left`);
     }
-    this.insertCase5(treeNode);
+    this.deleteCase6(node);
   }
-  // last case
-  insertCase5(treeNode) {
-    var grandparent = this.grandparent(treeNode);
-    ("change parent color on black");
-    treeNode.parent.color = TreeColors.black;
-    grandparent.color = TreeColors.red;
-    if (
-      treeNode.parent.left === treeNode &&
-      grandparent.left === treeNode.parent
-    ) {
-      if (grandparent) {
-        this.tips.push(
-          "if node is left son and parent is left son, do right rotation" +
-            " on grandparent"
-        );
-      }
-      this.rotateRight(grandparent);
+
+  deleteCase6(node) {
+    let sibling = this.getSibling(node);
+    sibling.color = this.getColor(node.parent);
+    node.parent.color = "black";
+    if (node === node.parent.left && sibling.right !== null) {
+      sibling.right.color = "black";
+      this.tips.push(`change ${sibling.right.value} color to black`);
+      this.rotateLeftToDelete(node.parent);
+      this.tips.push("rotate left");
+    }
+  }
+  getPredecessor(node) {
+    let currentNode = node.left;
+    while (currentNode.right !== null) {
+      currentNode = currentNode.right;
+    }
+    return currentNode;
+  }
+  getColor(node) {
+    if (node === null) {
+      return "black";
+    }
+    return node.color;
+  }
+  getSibling(node) {
+    if (node.parent === null) {
+      return null;
+    }
+    if (node === node.parent.left) {
+      return node.parent.right;
     } else {
-      if (grandparent) {
-        this.tips.push("Rotate left on grandparent");
-      }
-      this.rotateLeft(grandparent);
+      return node.parent.left;
     }
   }
-  serialize() {
-    localStorage.clear();
-    this.list.forEach((element) => {
-      if (element) {
-        element.children = [element.left, element.right];
-        if (element == this.root) {
-          element.padTop = 22;
-        } else {
-          element.padTop = 5;
-        }
+  getUncle(treeNode) {
+    var grandparent = this.getGrandparent(treeNode);
+    if (grandparent === null) {
+      return null;
+    }
+    if (treeNode.parent === grandparent.left) {
+      return grandparent.right;
+    } else {
+      return grandparent.left;
+    }
+  }
+
+  getGrandparent(treeNode) {
+    if (treeNode !== null && treeNode.parent !== null) {
+      return treeNode.parent.parent; // also will return null, if parent has no parent. It's ok.
+    } else {
+      return null;
+    }
+  }
+
+  findNode(value) {
+    let currentNode = this.root;
+    while (currentNode !== null) {
+      if (value < currentNode.value) {
+        currentNode = currentNode.left;
+      } else if (value > currentNode.value) {
+        currentNode = currentNode.right;
+      } else {
+        return currentNode;
       }
-    });
-    localStorage.setItem(
-      "root",
-      JSON.stringify(this.root, ["color", "key", "children", "padTop"])
-    );
-    // console.log(
-    //   JSON.parse(
-    //     localStorage
-    //       .getItem("root")
-    //       .replaceAll("null", `{"color":1}`)
-    //       .replaceAll(`"color":1`, `"color":"black"`)
-    //       .replaceAll(`"color":0`, `"color":"red"`)
-    //   )
-    // );
+    }
+    return null;
   }
 }

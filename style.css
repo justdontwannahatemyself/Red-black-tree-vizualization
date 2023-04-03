@@ -16,6 +16,7 @@ body {
   overflow-y: hidden;
   background-color: #ddd;
   position: relative;
+  height: 100vh;
 }
 path {
   fill: none;
@@ -62,4 +63,18 @@ svg {
 }
 #node {
   font-weight: 700;
+}
+#previous {
+  height: 2rem;
+  width: 6rem;
+  border-radius: 15px 15px 15px 15px;
+  border: none;
+  background-color: #888;
+  color: #fff;
+  margin-left: 0.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+.blocked {
+  opacity: 0.5;
 }
