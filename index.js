@@ -69,6 +69,10 @@ document.querySelector("#add").addEventListener("click", () => {
   //
   //
   const insertion = Number(document.querySelector("#adding").value.trim());
+  if (insertion > 99 || insertion < -99) {
+    document.querySelector("#adding").value = "";
+    return;
+  }
   rbtree.insert(insertion);
   let moves = `<p id = "node">Current node to add: ${insertion} </p> <br>`;
   rbtree.tips.forEach((el, index) => {

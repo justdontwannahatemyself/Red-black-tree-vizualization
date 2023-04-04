@@ -27,6 +27,7 @@ svg {
 }
 #adding,
 #deleting {
+  width: 9rem;
   border: none;
   height: 2rem;
   border-radius: 15px 15px 15px 15px;
@@ -35,6 +36,9 @@ svg {
 }
 #adding {
   margin-left: 1rem;
+}
+#adding::placeholder {
+  font: 10px "Montserrat";
 }
 #add,
 #delete {
