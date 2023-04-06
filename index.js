@@ -73,6 +73,9 @@ document.querySelector("#add").addEventListener("click", () => {
     document.querySelector("#adding").value = "";
     return;
   }
+  if (isNaN(insertion)) {
+    return;
+  }
   rbtree.insert(insertion);
   let moves = `<p id = "node">Current node to add: ${insertion} </p> <br>`;
   rbtree.tips.forEach((el, index) => {
@@ -126,6 +129,9 @@ document.querySelector("#delete").addEventListener("click", () => {
   //
 
   const deletion = Number(document.querySelector("#deleting").value.trim());
+  if (isNaN(deletion)) {
+    return;
+  }
   rbtree.delete(deletion);
   document.querySelector("#deleting").value = "";
   let convertedTree = convertTree(rbtree.root);

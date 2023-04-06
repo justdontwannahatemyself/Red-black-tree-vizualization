@@ -11,13 +11,11 @@ class Node {
 class RedBlackTree {
   constructor() {
     this.root = null;
-    this.list = [];
     this.tips = [];
   }
   insert(key) {
     this.tips = [];
     var treeNode = new Node(key);
-    this.list.push(treeNode);
     if (this.root === null) {
       this.root = treeNode;
     } else {
@@ -30,7 +28,6 @@ class RedBlackTree {
         } else if (currentNode.value < treeNode.value) {
           nextNode = currentNode.right;
         } else {
-          this.list.slice[(0, -1)];
           return; // return if node with that key already exists
         }
       }
